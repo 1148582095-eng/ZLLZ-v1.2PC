@@ -2265,6 +2265,31 @@ function getTaskSource(row){
   if(row && row.source) return row.source;
   return "专网指挥调度系统";
 }
+function pad2(n){
+  n = String(n == null ? "" : n);
+  return n.length < 2 ? "0" + n : n;
+}
+function formatDispatchTimeShort(raw){
+  var s = String(raw || "").trim();
+  var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::\d{2})?)?/);
+  if(!m) return s || "-";
+  return m[1] + "-" + pad2(m[2]) + "-" + pad2(m[3]) + " " + pad2(m[4] || "00") + ":" + pad2(m[5] || "00");
+}
+function getTaskInstrType(row){
+  if(row && row.instrType) return row.instrType;
+  if(row && row.category && ["舆情处置","错误表述","通知通报","业务协同"].indexOf(row.category) > -1) return row.category;
+  var tpl = String((row && (row.template || row.path)) || "");
+  if(tpl.indexOf("错误表述") > -1) return "错误表述";
+  if(tpl.indexOf("通知") > -1 || tpl.indexOf("通报") > -1) return "通知通报";
+  if(tpl.indexOf("协同") > -1) return "业务协同";
+  return "舆情处置";
+}
+function instrTypeTagClass(name){
+  if(name === "错误表述") return "cw";
+  if(name === "通知通报") return "tz";
+  if(name === "业务协同") return "xt";
+  return "yq";
+}
 
 function taskTableRowHtml(row,mode,rowIndex){
   var hasHandled=row.handled||row.status==="已归档";
@@ -2278,11 +2303,14 @@ function taskTableRowHtml(row,mode,rowIndex){
   var idTagText = isCirculate ? "传阅" : (isNotice ? "通知" : "待办");
   var idTagCls = isCirculate ? "circulate" : (isNotice ? "notice" : "todo");
   var idCell='<div class="id-cell-vertical"><div class="id-tag-row"><span class="id-type-tag '+idTagCls+'">'+idTagText+'</span></div><div class="id-code-row"><span class="id-code-text" title="'+idFull+'">'+idFull+'</span><button type="button" class="copy-id-btn" data-action="copy-id" data-copy-text="'+idFull+'" title="复制ID">'+ico("copy",12)+'</button></div></div>';
+  var dispatchTimeCn = formatDispatchTimeShort(row.time || row.sentTime);
+  var instrTypeName = getTaskInstrType(row);
+  var idCellMy='<div class="id-cell-vertical"><div class="id-tag-row"><span class="id-type-tag '+instrTypeTagClass(instrTypeName)+'">'+escapeHtml(instrTypeName)+'</span></div><div class="id-code-row"><span class="id-code-text" title="'+idFull+'">'+idFull+'</span><button type="button" class="copy-id-btn" data-action="copy-id" data-copy-text="'+idFull+'" title="复制ID">'+ico("copy",12)+'</button></div></div>';
+  var seqTd = '<td class="col-seq my-instr-seq">' + ((typeof rowIndex === "number" ? rowIndex : 0) + 1) + '</td>';
 
   var senderOrg=escapeHtml(row.senderOrg||"市公安局情指中心");
   var senderUser=escapeHtml(row.sender||"张伟");
-  var senderTime=escapeHtml(row.senderTime||(row.time?row.time.split(" ")[1]||"09:15":"09:15"));
-  var senderCell='<div class="sender-cell-wrap"><div class="sender-org-line" title="'+senderOrg+'">'+ico("building-2",13)+'<span>'+senderOrg+'</span></div><div class="sender-user-line">'+ico("user",12)+'<span>'+senderUser+' · '+senderTime+'</span></div></div>';
+  var senderCell='<div class="sender-cell-wrap"><div class="sender-user-line" title="'+senderUser+'"><span>'+senderUser+'</span></div><div class="sender-org-line" title="'+senderOrg+'"><span>'+senderOrg+'</span></div></div>';
 
   // 1、平级加急特级，采用不同颜色的icon标识。
   var urgencyVal=row.urgency||"平急";
@@ -2320,17 +2348,16 @@ function taskTableRowHtml(row,mode,rowIndex){
     var sentTime=row.time||row.sentTime||"-";
     var sourcePart='<span class="todo-source-compact todo-sent-time" title="下发时间：'+escapeHtml(sentTime)+'">下发时间：'+escapeHtml(sentTime)+'</span>';
     countdownBoxHtml='<div class="todo-compact-meta-row">'+sourcePart+chipHtml+'</div>';
-  } else if(!skipCountdown && hasDeadline){
-    var deadlineStr=row.deadline||getRowDeadlineStr(row);
-    var deadlinePart='<span class="todo-deadline-compact">'+ico("calendar-clock",12)+'限时完成：'+escapeHtml(deadlineStr)+'</span>';
-    countdownBoxHtml='<div class="todo-compact-meta-row">'+deadlinePart+chipHtml+'</div>';
+  } else {
+    var dispatchPart='<span class="todo-dispatch-time" title="下发时间">下发时间 '+escapeHtml(dispatchTimeCn)+'</span>';
+    countdownBoxHtml='<div class="todo-compact-meta-row">'+dispatchPart+chipHtml+'</div>';
   }
 
   // 5、标题下发去除发文模板。
   var titleCell='<div class="todo-title-wrap">'+badgesHtml+'<span class="todo-title-link" title="'+escapeHtml(row.title)+'">'+escapeHtml(row.title)+'</span>'+countdownBoxHtml+'</div>';
 
   var statusColBadgeCls=statusClass(displayStatus);
-  var statusCol='<div style="text-align:center"><span class="status-col-badge '+statusColBadgeCls+'">'+displayStatus+'</span></div>';
+  var statusCol='<div class="status-col-inner"><span class="status-col-badge '+statusColBadgeCls+'">'+displayStatus+'</span></div>';
 
   // 8、操作列按钮逻辑：
   // 1. 在我的指令-待办中，操作列的按钮，统一为去处理。
@@ -2356,18 +2383,15 @@ function taskTableRowHtml(row,mode,rowIndex){
     var appName = getTaskApplication(row);
     var appTd = '<td class="col-app"><span class="tag category" title="'+escapeHtml(appName)+'">'+escapeHtml(appName)+'</span></td>';
     var seqTd = '<td class="col-seq sent-mgmt-seq">'+seqNo+'</td>';
-    return '<tr class="task-table-row" data-action="detail" data-detail-key="'+row.key+'" data-detail-source="'+mode+'">'+seqTd+'<td class="col-id">'+idCell+'</td><td class="col-title">'+titleCell+'</td>'+appTd+senderTd+handlerTd+'<td class="col-status">'+statusCol+'</td><td class="col-action">'+actionCell+'</td></tr>';
+    return '<tr class="task-table-row">'+seqTd+'<td class="col-id">'+idCellMy+'</td><td class="col-title">'+titleCell+'</td><td class="col-status">'+statusCol+'</td>'+appTd+senderTd+handlerTd+'<td class="col-action">'+actionCell+'</td></tr>';
   } else if(mode === "sent"){
-    var activeTab = (state.listTabs && state.listTabs[mode]) || "全部";
-    if(activeTab === "已归档"){
-      return '<tr class="task-table-row" data-action="detail" data-detail-key="'+row.key+'" data-detail-source="'+mode+'"><td style="width:44px;text-align:center"><span class="fake-check"></span></td><td style="width:205px;white-space:nowrap">'+idCell+'</td><td>'+titleCell+'</td><td style="width:84px;text-align:center">'+statusCol+'</td><td style="width:96px;text-align:center">'+actionCell+'</td></tr>';
-    } else {
-      var handlerTd = '<td style="width:130px">' + renderCurrentHandlerCell(row) + '</td>';
-      return '<tr class="task-table-row" data-action="detail" data-detail-key="'+row.key+'" data-detail-source="'+mode+'"><td style="width:44px;text-align:center"><span class="fake-check"></span></td><td style="width:205px;white-space:nowrap">'+idCell+'</td><td>'+titleCell+'</td>'+handlerTd+'<td style="width:84px;text-align:center">'+statusCol+'</td><td style="width:96px;text-align:center">'+actionCell+'</td></tr>';
-    }
+    var handlerTd = '<td class="col-handler">' + renderCurrentHandlerCell(row) + '</td>';
+    return '<tr class="task-table-row" data-action="detail" data-detail-key="'+row.key+'" data-detail-source="'+mode+'">'+seqTd+'<td class="col-id">'+idCellMy+'</td><td class="col-title">'+titleCell+'</td><td class="col-status">'+statusCol+'</td>'+handlerTd+'<td class="col-action">'+actionCell+'</td></tr>';
+  } else if(mode === "todo"){
+    return '<tr class="task-table-row" data-action="detail" data-detail-key="'+row.key+'" data-detail-source="'+mode+'">'+seqTd+'<td class="col-id">'+idCellMy+'</td><td class="col-title">'+titleCell+'</td><td class="col-status">'+statusCol+'</td><td class="col-sender">'+senderCell+'</td><td class="col-action">'+actionCell+'</td></tr>';
   }
 
-  return '<tr class="task-table-row" data-action="detail" data-detail-key="'+row.key+'" data-detail-source="'+mode+'"><td style="width:44px;text-align:center"><span class="fake-check"></span></td><td style="width:205px;white-space:nowrap">'+idCell+'</td><td style="width:150px">'+senderCell+'</td><td>'+titleCell+'</td><td style="width:84px;text-align:center">'+statusCol+'</td><td style="width:96px;text-align:center">'+actionCell+'</td></tr>';
+  return '<tr class="task-table-row" data-action="detail" data-detail-key="'+row.key+'" data-detail-source="'+mode+'">'+seqTd+'<td class="col-id">'+idCellMy+'</td><td class="col-sender">'+senderCell+'</td><td class="col-title">'+titleCell+'</td><td class="col-status">'+statusCol+'</td><td class="col-action">'+actionCell+'</td></tr>';
 }
 
 function renderEmptyStateHtml(title, sub){
@@ -2444,51 +2468,60 @@ function taskTableHtml(rows,mode,startIndex){
       '<col style="width:44px">' +
       '<col style="width:220px">' +
       '<col>' +
+      '<col style="width:118px">' +
       '<col style="width:128px">' +
       '<col style="width:100px">' +
       '<col style="width:148px">' +
-      '<col style="width:72px">' +
       '<col style="width:100px">' +
     '</colgroup><thead><tr>' +
       '<th class="col-seq">序号</th>' +
       '<th class="col-id">ID</th>' +
       '<th class="col-title">指令标题</th>' +
+      '<th class="col-status">状态</th>' +
       '<th class="col-app">业务应用</th>' +
       '<th class="col-sender">下发人</th>' +
       '<th class="col-handler">' + handlerHeader + '</th>' +
-      '<th class="col-status">状态</th>' +
       '<th class="col-action">操作</th>' +
     '</tr></thead><tbody>' +
       rows.map(function(r, idx){return taskTableRowHtml(r,mode,startIndex + idx)}).join("") +
     '</tbody></table></div>';
-  } else if(mode==="sent"){
-    var activeTab = (state.listTabs && state.listTabs[mode]) || "全部";
-    if(activeTab === "已归档"){
-      return '<div class="task-table-wrap"><table class="task-table"><thead><tr>' +
-        '<th style="width:44px;text-align:center"><span class="fake-check"></span></th>' +
-        '<th style="width:205px;white-space:nowrap">ID</th>' +
-        '<th>指令标题</th>' +
-        '<th style="width:84px;text-align:center">状态</th>' +
-        '<th style="width:96px;text-align:center">操作</th>' +
-      '</tr></thead><tbody>' +
-        rows.map(function(r){return taskTableRowHtml(r,mode)}).join("") +
-      '</tbody></table></div>';
-    } else {
-      return '<div class="task-table-wrap"><table class="task-table"><thead><tr>' +
-        '<th style="width:44px;text-align:center"><span class="fake-check"></span></th>' +
-        '<th style="width:205px;white-space:nowrap">ID</th>' +
-        '<th>指令标题</th>' +
-        '<th style="width:130px">当前处理人</th>' +
-        '<th style="width:84px;text-align:center">状态</th>' +
-        '<th style="width:96px;text-align:center">操作</th>' +
-      '</tr></thead><tbody>' +
-        rows.map(function(r){return taskTableRowHtml(r,mode)}).join("") +
-      '</tbody></table></div>';
-    }
   }
-  var titleHeader = mode === "done" ? "指令标题" : (mode === "read" ? "待阅标题" : "待办标题");
-  var senderHeader = "发送单位/人员";
-  return '<div class="task-table-wrap"><table class="task-table"><thead><tr><th style="width:44px;text-align:center"><span class="fake-check"></span></th><th style="width:205px;white-space:nowrap">ID</th><th style="width:150px">'+senderHeader+'</th><th>'+titleHeader+'</th><th style="width:84px;text-align:center">状态</th><th style="width:96px;text-align:center">操作</th></tr></thead><tbody>'+rows.map(function(r){return taskTableRowHtml(r,mode)}).join("")+'</tbody></table></div>';
+  var titleHeader = mode === "read" ? "待阅标题" : "指令标题";
+  var colgroup = "";
+  var thead = "";
+  if(mode === "todo"){
+    colgroup =
+      '<col style="width:52px">' +
+      '<col style="width:210px">' +
+      '<col>' +
+      '<col style="width:118px">' +
+      '<col style="width:128px">' +
+      '<col style="width:96px">';
+    thead = '<th class="col-seq">序号</th><th class="col-id">ID</th><th class="col-title">指令标题</th><th class="col-status">状态</th><th class="col-sender">下发人</th><th class="col-action">操作</th>';
+  } else if(mode === "sent"){
+    colgroup =
+      '<col style="width:52px">' +
+      '<col style="width:210px">' +
+      '<col>' +
+      '<col style="width:118px">' +
+      '<col style="width:130px">' +
+      '<col style="width:96px">';
+    thead = '<th class="col-seq">序号</th><th class="col-id">ID</th><th class="col-title">指令标题</th><th class="col-status">状态</th><th class="col-handler">当前处理人</th><th class="col-action">操作</th>';
+  } else {
+    colgroup =
+      '<col style="width:52px">' +
+      '<col style="width:210px">' +
+      '<col style="width:128px">' +
+      '<col>' +
+      '<col style="width:118px">' +
+      '<col style="width:96px">';
+    thead = '<th class="col-seq">序号</th><th class="col-id">ID</th><th class="col-sender">下发人</th><th class="col-title">'+titleHeader+'</th><th class="col-status">状态</th><th class="col-action">操作</th>';
+  }
+  return '<div class="task-table-wrap"><table class="task-table my-instr-table"><colgroup>' + colgroup +
+  '</colgroup><thead><tr>' + thead +
+  '</tr></thead><tbody>' +
+    rows.map(function(r, idx){return taskTableRowHtml(r,mode,startIndex + idx)}).join("") +
+  '</tbody></table></div>';
 }
 function draftTableRowHtml(row, rowIndex){
   var seqNo = (typeof rowIndex === "number" ? rowIndex : 0) + 1;
@@ -2525,7 +2558,7 @@ function draftTableHtml(rows, startIndex){
     '<col>' +
     '<col style="width:210px">' +
     '<col style="width:148px">' +
-    '<col style="width:148px">' +
+    '<col style="width:200px">' +
   '</colgroup><thead><tr>' +
     '<th class="col-seq">序号</th>' +
     '<th class="col-id">草稿ID</th>' +
@@ -2623,8 +2656,17 @@ function filterBar(mode,total){
     var contentInput = '<div class="filter-content"><b>内容</b><input data-filter-content maxlength="100" placeholder="请输入指令标题/表单ID/内容" value="' + contentVal + '"><span class="counter">' + counterVal + '</span></div>';
 
     filterInputsHtml = senderFilter + processorFilter + contentInput;
+  } else if(mode === "todo"){
+    var typeOptions = ["舆情处置", "错误表述", "通知通报", "业务协同"];
+    var typeFilter = searchableFilterSelect("category", "指令类型", typeOptions, "category-select", f.category || "全部", "搜索指令类型...");
+    var senderPersonOptions = ["武甲", "张伟", "李明峰", "陈默", "武丁", "谭星", "齐杰"];
+    var senderFilter = searchableFilterSelect("sender", "下发人", senderPersonOptions, "person-select", f.sender || "全部", "搜索下发人...");
+    filterInputsHtml = typeFilter + senderFilter +
+      '<div class="filter-content"><b>内容</b><input data-filter-content maxlength="100" placeholder="请输入指令标题/表单ID/内容" value="' + contentVal + '"><span class="counter">' + counterVal + '</span></div>';
   } else {
-    // 5、待办的顶部筛选应该是：下发单位（搜索选中形式），下发人（搜索选中形式-括号中带单位）。内容。下拉的选中后立即查询。
+    // 待阅/已办：指令类型 + 下发单位 + 下发人 + 内容
+    var typeOptions = ["舆情处置", "错误表述", "通知通报", "业务协同"];
+    var typeFilter = searchableFilterSelect("category", "指令类型", typeOptions, "category-select", f.category || "全部", "搜索指令类型...");
     var orgOptions = [
       "中共省委网络安全和信息化委员会办公室",
       "省网络与信息安全应急指挥中心",
@@ -2647,7 +2689,7 @@ function filterBar(mode,total){
     ];
     var senderFilter = searchableFilterSelect("sender", "下发人", senderPersonOptions, "person-select", f.sender || "全部", "搜索下发人(带单位)...");
 
-    filterInputsHtml = orgFilter + senderFilter +
+    filterInputsHtml = typeFilter + orgFilter + senderFilter +
       '<div class="filter-content"><b>内容</b><input data-filter-content maxlength="100" placeholder="请输入指令标题/表单ID/内容" value="' + contentVal + '"><span class="counter">' + counterVal + '</span></div>';
   }
 
@@ -2659,9 +2701,11 @@ function filterBar(mode,total){
     hideQuickFlags = false;
   }
 
-  var onlyMineHtml = '<label class="quick-flag-item '+(isOnlyMine?'active':'')+'" data-action="toggle-flag" data-flag="onlyMine" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;user-select:none">' +
-    '<span class="fake-check '+(isOnlyMine?'on':'')+'">'+(isOnlyMine?'✓':'')+'</span> 只看我的' +
-  '</label>';
+  var onlyMineHtml = mode === "sent-mgmt"
+    ? '<label class="quick-flag-item '+(isOnlyMine?'active':'')+'" data-action="toggle-flag" data-flag="onlyMine" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;user-select:none">' +
+        '<span class="fake-check '+(isOnlyMine?'on':'')+'">'+(isOnlyMine?'✓':'')+'</span> 只看我的' +
+      '</label>'
+    : "";
   var quickFlagsHtml = "";
   if(!hideQuickFlags){
     quickFlagsHtml = '<div class="quick-flags">' +
@@ -2673,8 +2717,6 @@ function filterBar(mode,total){
         '<span class="fake-radio danger '+(isOverdue?'on':'')+'"></span> 已超时' +
       '</label>' +
     '</div>';
-  } else if(mode === "sent-mgmt"){
-    quickFlagsHtml = '<div class="quick-flags">' + onlyMineHtml + '</div>';
   }
 
   return '<div class="filter-single-row task-filters" data-filter-mode="'+mode+'">' +
@@ -2704,9 +2746,6 @@ function isCirculateTask(r){
 }
 
 function renderMyInstructions(){
-  // 暂时停用「我的指令」模块（待办/下发/待阅/已办/草稿箱侧栏），统一回到指令监控。
-  state.page = "sent-mgmt";
-  return renderSentManagement();
   var subPage=state.mySubPage||"todo";
 
   // 根据当前演示用户（武甲/武乙/武丙）动态过滤属于该用户的真实数据
@@ -2764,7 +2803,7 @@ function renderMyInstructions(){
   // 左侧侧边栏：下发指令、待办、下发、待阅（传阅数据）、已办、草稿箱
   var sidebarHtml='<aside class="list-sidebar">'+
     '<div class="sidebar-action-wrap">'+
-      '<button type="button" class="sidebar-action-btn" data-action="issue" title="'+(isStorageFull()?"存储空间已满，无法下发指令":"下发新指令")+'"'+(isStorageFull()?' style="opacity:.55;cursor:not-allowed"':'')+'>'+
+      '<button type="button" class="sidebar-action-btn" data-action="go-issue-dispatch" title="'+(isStorageFull()?"存储空间已满，无法下发指令":"前往下发指令")+'"'+(isStorageFull()?' style="opacity:.55;cursor:not-allowed"':'')+'>'+
         '<span class="sidebar-action-btn-left">'+
           '<span class="sidebar-action-icon">'+ico("send",17)+'</span>'+
           '<span class="sidebar-action-label">下发指令</span>'+
@@ -2774,19 +2813,19 @@ function renderMyInstructions(){
     '</div>'+
     '<nav class="sidebar-nav">'+
       '<button type="button" class="sidebar-item '+(subPage==="todo"?"active":"")+'" data-action="switch-my-subpage" data-subpage="todo">'+
-        '<span class="sidebar-item-left">'+ico("inbox",16)+'<span>待办</span></span>'+
+        '<span class="sidebar-item-left">'+ico("inbox",16)+'<span>我的待办</span></span>'+
         '<span class="sidebar-badge">'+todoBaseRows.length+'</span>'+
       '</button>'+
       '<button type="button" class="sidebar-item '+(subPage==="sent"?"active":"")+'" data-action="switch-my-subpage" data-subpage="sent">'+
-        '<span class="sidebar-item-left">'+ico("send",16)+'<span>下发</span></span>'+
+        '<span class="sidebar-item-left">'+ico("send",16)+'<span>我下发的</span></span>'+
         '<span class="sidebar-badge">'+sentBaseRows.length+'</span>'+
       '</button>'+
       '<button type="button" class="sidebar-item '+(subPage==="read"?"active":"")+'" data-action="switch-my-subpage" data-subpage="read">'+
-        '<span class="sidebar-item-left">'+ico("book-open",16)+'<span>待阅</span></span>'+
+        '<span class="sidebar-item-left">'+ico("book-open",16)+'<span>我的待阅</span></span>'+
         '<span class="sidebar-badge">'+readBaseRows.length+'</span>'+
       '</button>'+
       '<button type="button" class="sidebar-item '+(subPage==="done"?"active":"")+'" data-action="switch-my-subpage" data-subpage="done">'+
-        '<span class="sidebar-item-left">'+ico("check-circle-2",16)+'<span>已办</span></span>'+
+        '<span class="sidebar-item-left">'+ico("check-circle-2",16)+'<span>我的已办</span></span>'+
         '<span class="sidebar-badge">'+doneBaseRows.length+'</span>'+
       '</button>'+
       '<button type="button" class="sidebar-item '+(subPage==="draft"?"active":"")+'" data-action="switch-my-subpage" data-subpage="draft">'+
@@ -2853,9 +2892,6 @@ function renderMyInstructions(){
 
   var isRadioToday = (state.quickFlag === "todayDue") || (!state.quickFlag && state.quickFlags && state.quickFlags.todayDue);
   var isRadioOverdue = (state.quickFlag === "overdue") || (!state.quickFlag && state.quickFlags && state.quickFlags.overdue);
-  if(state.quickFlags && state.quickFlags.onlyMine){
-    rows=rows.filter(isItemMine);
-  }
   if(subPage !== "done" && subPage !== "draft"){
     if(isRadioToday){
       rows=rows.filter(isItemTodayDue);
@@ -2868,13 +2904,7 @@ function renderMyInstructions(){
   if(q){
     if(q.category&&q.category!=="全部"){
       var cKw=q.category.trim();
-      rows=rows.filter(function(r){
-        return (r.categoryTag&&r.categoryTag.indexOf(cKw)>-1)||
-               (r.template&&r.template.indexOf(cKw)>-1)||
-               (r.path&&r.path.indexOf(cKw)>-1)||
-               (r.title&&r.title.indexOf(cKw)>-1)||
-               (r.type&&r.type.indexOf(cKw)>-1);
-      });
+      rows=rows.filter(function(r){ return getTaskInstrType(r) === cKw; });
     }
     if(q.template&&q.template!=="全部"){
       var tKw=q.template.trim();
@@ -2939,7 +2969,7 @@ function renderMyInstructions(){
   var startIndex=(currentPage-1)*pageSize;
   var pageRows=rows.slice(startIndex,startIndex+pageSize);
 
-  var tableContentHtml = subPage==="draft" ? draftTableHtml(pageRows) : taskTableHtml(pageRows, currentMode);
+  var tableContentHtml = subPage==="draft" ? draftTableHtml(pageRows, startIndex) : taskTableHtml(pageRows, currentMode, startIndex);
   var mainHtml='<main class="list-main"><section class="list-content-card">'+pillsBarHtml+filterBar(currentMode,selectedTotal)+tableContentHtml+pagination(selectedTotal,pageSize,currentPage,currentMode)+'</section></main>';
 
   var pageTitle="我的指令";
@@ -6439,10 +6469,9 @@ function renderIssueTemplateCardsHtml(filterCat, searchKw, selectedId){
   }
   var full = isStorageFull();
   return tpls.map(function(t){
-    var isSelected = t.id === selectedId;
     var isUrgent = t.requirement === "限时回执";
     var pillClass = isUrgent ? "reply" : t.requirement === "仅阅读" ? "read" : "reply";
-    return '<div class="wizard-tpl-card issue-dispatch-card ' + (isSelected ? "selected" : "") + '" data-action="issue-page-select-tpl" data-tpl-id="' + t.id + '">' +
+    return '<div class="wizard-tpl-card issue-dispatch-card" data-tpl-id="' + t.id + '">' +
       '<div>' +
         '<div class="wizard-tpl-head">' +
           '<span class="tpl-tag-pill ' + pillClass + '">' + (isUrgent ? ico("clock-3", 12) : ico("check-check", 12)) + " " + t.requirement + '</span>' +
@@ -6516,7 +6545,6 @@ function renderIssueDispatchPage(){
   }
   var filterCat = state.issueTplCat || "全部";
   var kw = state.issueTplKw || "";
-  var selectedId = wizardState.selectedTemplateId;
   var tplFilterBar = '<div class="wizard-filter-bar issue-dispatch-filter">' +
     '<div class="wizard-category-tabs">' +
       ["全部", "舆情处置", "错误表述"].map(function(cat){
@@ -6543,7 +6571,7 @@ function renderIssueDispatchPage(){
         '<span class="issue-dispatch-count">' + issueTemplates.filter(function(t){ return t.enabled !== false; }).length + " 套</span>" +
       "</div>" +
       tplFilterBar +
-      '<div class="wizard-tpl-grid issue-dispatch-grid">' + renderIssueTemplateCardsHtml(filterCat, kw, selectedId) + "</div>" +
+      '<div class="wizard-tpl-grid issue-dispatch-grid">' + renderIssueTemplateCardsHtml(filterCat, kw) + "</div>" +
     "</section>" +
     footer() +
   "</div>";
@@ -9721,6 +9749,11 @@ function renderGuide(){
 }
 var HASH_PAGES = {
   guide: true,
+  todo: true,
+  sent: true,
+  read: true,
+  done: true,
+  draft: true,
   "sent-mgmt": true,
   "issue-dispatch": true,
   stats: true,
@@ -9780,12 +9813,21 @@ function parseAppHash(){
       }
     };
   }
+  if(page === "todo" || page === "sent" || page === "read" || page === "done" || page === "draft"){
+    var sub = page === "todo" ? (parts[1] || "todo") : page;
+    if(sub !== "todo" && sub !== "sent" && sub !== "read" && sub !== "done" && sub !== "draft") sub = "todo";
+    return { page: "todo", mySubPage: sub };
+  }
   if(!HASH_PAGES[page]) page = "guide";
   return { page: page };
 }
 function buildAppHash(){
   var page = state.page || "guide";
-  if(page === "todo" || page === "sent" || page === "done" || page === "draft" || page === "issue-form" || page === "read") page = "sent-mgmt";
+  if(page === "issue-form") page = "todo";
+  if(page === "todo" || page === "sent" || page === "read" || page === "done" || page === "draft"){
+    var sub = page === "todo" ? (state.mySubPage || "todo") : page;
+    page = sub === "todo" ? "todo" : "todo/" + sub;
+  }
   if(page === "roles") page = "settings";
   var hash = "#/" + page;
   if(page === "settings" && state.settingsMenu === "storage") hash = "#/settings/storage";
@@ -9804,6 +9846,7 @@ function buildAppHash(){
 function applyParsedHash(parsed){
   if(!parsed || parsed.jump) return false;
   if(parsed.page) state.page = parsed.page;
+  if(parsed.mySubPage) state.mySubPage = parsed.mySubPage;
   if(parsed.settingsMenu) state.settingsMenu = parsed.settingsMenu;
   if(parsed.detailKey) state.detailKey = parsed.detailKey;
   if(parsed.detailSource) state.detailSource = parsed.detailSource;
@@ -9852,20 +9895,18 @@ function consumeLegacyQuery(){
 function render(){
   closeNavSettingsMenu();
   document.querySelector(".app").classList.toggle("guide-mode",state.page==="guide");
-  if(state.page==="todo"||state.page==="sent"||state.page==="done"||state.page==="draft"||state.page==="issue-form"||state.page==="read"){
-    // 我的指令 / 全屏下发详情页暂时停用
-    state.page="sent-mgmt";
+  if(state.page==="issue-form"){
+    state.page="todo";
   }
   var activePage=state.page==="detail"?(state.detailSource==="stats"||state.detailSource==="stats2"?"stats":state.detailSource):state.page==="stats-drilldown"?"stats":state.page;
-  if(activePage==="sent"||activePage==="done"||activePage==="draft"||activePage==="issue-form") activePage="todo";
+  if(activePage==="sent"||activePage==="read"||activePage==="done"||activePage==="draft"||activePage==="issue-form") activePage="todo";
   if(activePage==="roles"||activePage==="settings") activePage="settings";
   document.querySelectorAll("[data-page]").forEach(function(n){n.classList.toggle("active",n.dataset.page===activePage)});
   var settingsTrig=document.getElementById("nav-settings-trigger");
   if(settingsTrig) settingsTrig.classList.toggle("active", state.page==="settings");
   var html=state.page==="guide"?renderGuide():
-    // state.page==="issue-form"?renderIssueFormPage():
     state.page==="issue-dispatch"?renderIssueDispatchPage():
-    // (state.page==="todo"||state.page==="sent"||state.page==="done"||state.page==="draft")?renderMyInstructions():
+    (state.page==="todo"||state.page==="sent"||state.page==="read"||state.page==="done"||state.page==="draft")?renderMyInstructions():
     state.page==="sent-mgmt"?renderSentManagement():
     state.page==="stats"?renderStats2():
     state.page==="stats2"?renderStats2():
@@ -10055,9 +10096,12 @@ function bindActions(){
       var lbl = el.querySelector(".toggle-label");
       if(lbl) lbl.textContent = shouldExp ? "全部收起" : "全部展开";
     }
-    else if(a==="issue"){
+    else if(a==="issue" || a==="go-issue-dispatch"){
       if(!assertCanIssue()) return;
-      resetWizardState();openModal("issue");
+      state.page = "issue-dispatch";
+      state.issueDraftView = false;
+      render();
+      window.scrollTo(0,0);
     }
     else if(a==="contact-edit"){
       state.extEditingId = el.dataset.contactId || "";
@@ -10748,14 +10792,13 @@ function bindActions(){
       render();
     }
     else if(a==="issue-page-select-tpl"){
-      if(e.target.closest("[data-action='issue-with-tpl'],[data-action='preview-tpl-item']")) return;
-      wizardState.selectedTemplateId = el.dataset.tplId;
-      render();
+      return;
     }
     else if(a==="switch-demo-user"){
       switchDemoUser(el.dataset.user);
     }
     else if(a==="switch-my-subpage"){
+      state.page="todo";
       state.mySubPage=el.dataset.subpage||"todo";
       if(!state.pageNumbers) state.pageNumbers={todo:1,sent:1,done:1,draft:1,"sent-mgmt":1};
       state.pageNumbers[state.mySubPage]=1;
@@ -15258,6 +15301,7 @@ document.querySelectorAll("[data-page]").forEach(function(n){
       if(!state.settingsMenu || state.settingsMenu === "templates") state.settingsMenu = "dict";
     } else {
       state.page = p;
+      if(p === "todo" && !state.mySubPage) state.mySubPage = "todo";
       if(p === "issue-dispatch") state.issueDraftView = false;
     }
     render();
@@ -15321,6 +15365,7 @@ document.addEventListener("click",function(e){
       if(!state.settingsMenu || state.settingsMenu === "templates") state.settingsMenu = "dict";
     } else {
       state.page = p;
+      if(p === "todo" && !state.mySubPage) state.mySubPage = "todo";
       if(p === "issue-dispatch") state.issueDraftView = false;
     }
     render();
@@ -15600,11 +15645,13 @@ document.addEventListener("click",function(e){
     showToast("✓ 指令下发成功！已进入流转闭环与协同跟踪。");
     return;
   }
-  var issueActionBtn = e.target.closest("[data-action='issue']");
+  var issueActionBtn = e.target.closest("[data-action='issue'],[data-action='go-issue-dispatch']");
   if(issueActionBtn){
     if(!assertCanIssue()) return;
-    resetWizardState();
-    openModal("issue");
+    state.page = "issue-dispatch";
+    state.issueDraftView = false;
+    render();
+    window.scrollTo(0,0);
     return;
   }
   var issueWithTplBtn = e.target.closest("[data-action='issue-with-tpl']");

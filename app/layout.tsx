@@ -11,7 +11,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="zh-CN">
       <head>
-        <link rel="stylesheet" href="./prototype.css?v=setting-modal-20261012" />
+        <link rel="stylesheet" href="./prototype.css?v=sent-mgmt-status-20261012" />
         <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
       </head>
       <body>
