@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>指令流转中心 1.2 高保真原型</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <link rel="stylesheet" href="./prototype.css?v=setting-modal-20261012">
+</head>
+<body>
+<div class="app">
+  <header class="top"><div class="top-inner">
+    <div class="brand flex items-center">
+      <img class="brand-logo" src="brand-logo.png" alt="正营用 wxb.cn">
+      <div class="system-name">指令流转中心</div>
+      <div class="org">台湾省网信办</div>
+    </div>
+    <div class="tools">
+      <button class="guide-return-btn" data-action="open-guide">返回统一入口</button>
+      <button class="tool-circle" data-pop="todo" title="待办"><i data-lucide="calendar-days" width="18"></i><span class="dot"></span></button>
+      <button class="tool-circle" data-pop="notice" title="通知"><i data-lucide="bell" width="18"></i><span class="dot"></span></button>
+      <button class="tool-circle" data-pop="service" title="客服"><i data-lucide="headphones" width="18"></i></button>
+      <div class="user-profile-menu-container" id="user-profile-menu-container">
+        <button type="button" class="user-profile-trigger" id="user-profile-trigger" data-action="toggle-user-menu" title="点击切换演示用户">
+          <div class="avatar" id="top-user-avatar">武甲</div>
+          <span class="user-name" id="top-user-name">武甲<i data-lucide="chevron-down" width="14" height="14"></i></span>
+        </button>
+        <div class="user-profile-dropdown" id="user-profile-dropdown">
+          <div class="user-dropdown-header">
+            <div class="user-dropdown-title"><i data-lucide="users-round" width="14"></i>切换演示用户</div>
+            <span class="user-dropdown-sub">快速模拟不同岗位角色的指令权限与视角</span>
+          </div>
+          <div class="user-dropdown-list">
+            <button type="button" class="user-dropdown-item active" data-action="switch-demo-user" data-user="武甲">
+              <div class="user-item-avatar">武甲</div>
+              <div class="user-item-info">
+                <div class="user-item-name-row">
+                  <span class="user-item-name">武甲</span>
+                  <span class="user-item-role-tag">主管/下发</span>
+                </div>
+                <span class="user-item-duty">综合处 · 指令下发、统筹监管与审核</span>
+              </div>
+              <div class="user-item-check"><i data-lucide="check" width="16"></i></div>
+            </button>
+            <button type="button" class="user-dropdown-item" data-action="switch-demo-user" data-user="武乙">
+              <div class="user-item-avatar">武乙</div>
+              <div class="user-item-info">
+                <div class="user-item-name-row">
+                  <span class="user-item-name">武乙</span>
+                  <span class="user-item-role-tag">专班办理</span>
+                </div>
+                <span class="user-item-duty">处置专班 · 舆情接单处置、回执与转办</span>
+              </div>
+              <div class="user-item-check"><i data-lucide="check" width="16"></i></div>
+            </button>
+            <button type="button" class="user-dropdown-item" data-action="switch-demo-user" data-user="武丙">
+              <div class="user-item-avatar">武丙</div>
+              <div class="user-item-info">
+                <div class="user-item-name-row">
+                  <span class="user-item-name">武丙</span>
+                  <span class="user-item-role-tag">安全技术</span>
+                </div>
+                <span class="user-item-duty">网络安全科 · 协同会商与技术核验</span>
+              </div>
+              <div class="user-item-check"><i data-lucide="check" width="16"></i></div>
+            </button>
+            <button type="button" class="user-dropdown-item" data-action="switch-demo-user" data-user="武丁">
+              <div class="user-item-avatar">武丁</div>
+              <div class="user-item-info">
+                <div class="user-item-name-row">
+                  <span class="user-item-name">武丁</span>
+                  <span class="user-item-role-tag">综合值班</span>
+                </div>
+                <span class="user-item-duty">值班室 · 待阅接单流转督办</span>
+              </div>
+              <div class="user-item-check"><i data-lucide="check" width="16"></i></div>
+            </button>
+          </div>
+          <div class="user-dropdown-footer">
+            <i data-lucide="info" width="13"></i> 点击即可切换角色视角并联动刷新指令数据
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></header>
+  <nav class="nav"><div class="nav-inner">
+    <button class="nav-item nav-home"><i data-lucide="house" width="18"></i></button>
+    <button class="nav-item active" data-page="sent-mgmt"><i data-lucide="house" width="16"></i>指令监控</button>
+    <button class="nav-item" data-page="issue-dispatch"><i data-lucide="send" width="16"></i>下发指令</button>
+    <button class="nav-item" data-page="stats"><i data-lucide="bar-chart-3" width="16"></i>统计管理</button>
+    <button class="nav-item" data-page="external"><i data-lucide="users" width="16"></i>外部联系人</button>
+    <button class="nav-item" data-page="templates"><i data-lucide="layout-template" width="16"></i>模板库</button>
+    <div class="nav-dropdown" id="nav-settings-menu">
+      <button type="button" class="nav-item nav-drop-trigger" id="nav-settings-trigger" data-action="toggle-settings-nav">
+        <i data-lucide="sliders-horizontal" width="16"></i>
+        <span>系统设置</span>
+        <i class="nav-drop-caret" data-lucide="chevron-down" width="14" height="14"></i>
+      </button>
+      <div class="nav-dropdown-panel" id="nav-settings-dropdown">
+        <button type="button" class="nav-drop-item" data-action="open-v8-jump-modal">
+          <i data-lucide="user-cog" width="16"></i>
+          <span>用户与权限管理</span>
+          <i class="nav-drop-ext" data-lucide="external-link" width="14"></i>
+        </button>
+        <button type="button" class="nav-drop-item" data-action="open-settings-dict">
+          <i data-lucide="layers-3" width="16"></i>
+          <span>自定义分类配置</span>
+        </button>
+        <button type="button" class="nav-drop-item" data-action="open-settings-storage">
+          <i data-lucide="hard-drive" width="16"></i>
+          <span>系统存储管理</span>
+        </button>
+      </div>
+    </div>
+  </div></nav>
+  <main id="page"></main>
+  <div id="popover" class="toolbar-pop"></div>
+  <div id="modalRoot" class="modal-mask"></div>
+  <div id="toast" class="toast"></div>
+  <div class="watermark"></div>
+</div>
+<script src="./prototype.js?v=setting-modal-20261012"></script>
+</body>
+</html>

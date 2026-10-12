@@ -1,0 +1,8 @@
+{
+  "name": "Remix  指令流转PC端",
+  "description": "pc端原型",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
