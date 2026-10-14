@@ -7721,6 +7721,133 @@
   pointer-events: none;
 }
 
+.app.login-mode{
+  min-height:100vh;
+  background:#d9ebf8;
+}
+.app.login-mode .top,
+.app.login-mode .nav,
+.app.login-mode .watermark{
+  display:none !important;
+}
+.app.login-mode #page{
+  width:100%;
+  max-width:none;
+  min-width:0;
+  margin:0;
+  padding:0;
+}
+.zgl-login{
+  position:relative;
+  min-height:100vh;
+  overflow:hidden;
+  color:#1e3a5f;
+  font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;
+  background:radial-gradient(1200px 700px at 18% 42%, rgba(255,255,255,.55) 0%, transparent 55%),
+    linear-gradient(180deg, #e7f3fc 0%, #d4e9f8 42%, #cfe6f6 100%);
+}
+.zgl-login-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 22% 48%, rgba(120,176,220,.18) 0 140px, transparent 220px),
+    radial-gradient(circle at 78% 30%, rgba(255,255,255,.35) 0 80px, transparent 160px);
+  opacity:.9;
+}
+.zgl-login-top{
+  position:relative;z-index:2;
+  height:72px;padding:0 40px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.zgl-login-brands{display:flex;align-items:center;gap:16px}
+.zgl-kn{display:flex;align-items:center;gap:8px;color:#1d4f86}
+.zgl-kn b{font-size:26px;letter-spacing:-1px;line-height:1}
+.zgl-kn span{font-size:11px;line-height:1.25;color:#5b7ea3;font-weight:600}
+.zgl-brand-split{width:1px;height:28px;background:#b7cfe4}
+.zgl-login-logo{height:36px;width:auto;object-fit:contain}
+.zgl-login-links{display:flex;align-items:center;gap:12px;color:#4a6f96;font-size:13px}
+.zgl-login-links i{width:1px;height:12px;background:#b7cfe4;display:inline-block}
+.zgl-login-links span{display:inline-flex;align-items:center;gap:6px}
+.zgl-login-body{
+  position:relative;z-index:2;
+  display:grid;
+  grid-template-columns:1.1fr .7fr 380px;
+  align-items:center;
+  gap:24px;
+  min-height:calc(100vh - 140px);
+  padding:20px 8% 60px;
+  max-width:1440px;
+  margin:0 auto;
+}
+.zgl-login-copy{position:relative;z-index:2;padding-left:12px}
+.zgl-login-domain{font-size:18px;font-weight:700;color:#2f6aa3;letter-spacing:.04em}
+.zgl-login-copy h1{margin:8px 0 10px;font-size:56px;line-height:1.05;font-weight:800;color:#163a66}
+.zgl-login-copy h2{margin:0 0 28px;font-size:22px;font-weight:700;color:#2c5f94}
+.zgl-login-copy ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.zgl-login-copy li{display:flex;align-items:center;gap:8px;font-size:15px;color:#355a82;font-weight:600}
+.zgl-login-copy li b{color:#1d6bb5}
+.zgl-login-copy li svg{color:#2f7cc4;flex:none}
+.zgl-login-shield{
+  display:flex;align-items:center;justify-content:center;pointer-events:none;
+  opacity:.14;color:#7ea8cf;font-size:86px;font-weight:800;letter-spacing:8px;
+  text-shadow:0 8px 30px rgba(80,130,180,.2);
+}
+.zgl-login-card{
+  width:340px;justify-self:end;
+  background:#fff;border-radius:16px;
+  box-shadow:0 18px 50px rgba(70,120,170,.18);
+  padding:28px 28px 24px;text-align:center;
+}
+.zgl-login-card-title{font-size:22px;font-weight:800;color:#1f3f66}
+.zgl-login-card-sub{margin-top:8px;font-size:13px;color:#7a93ad}
+.zgl-login-qr{
+  position:relative;display:block;width:210px;height:210px;margin:22px auto 12px;
+  border:0;background:#fff;border-radius:8px;cursor:pointer;padding:10px;
+  box-shadow:0 0 0 1px #e6eef5;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.zgl-login-qr:hover{transform:scale(1.03);box-shadow:0 8px 22px rgba(40,90,140,.16)}
+.zgl-qr-svg{width:100%;height:100%;display:block;fill:#163a66}
+.zgl-login-scan{
+  display:none;position:absolute;left:12px;right:12px;height:2px;top:16px;
+  background:linear-gradient(90deg,transparent,rgba(47,124,196,.15),#2f7cc4,rgba(47,124,196,.15),transparent);
+  box-shadow:0 0 10px rgba(47,124,196,.55);pointer-events:none;z-index:2
+}
+.zgl-login-entering-mask{
+  display:none;position:absolute;inset:0;border-radius:8px;
+  background:rgba(255,255,255,.42);align-items:center;justify-content:center;z-index:3
+}
+.zgl-login-spinner{
+  width:34px;height:34px;border-radius:50%;
+  border:3px solid rgba(47,124,196,.2);border-top-color:#2f7cc4;
+  animation:zglSpin .7s linear infinite
+}
+.zgl-login.is-entering .zgl-login-qr{cursor:wait;transform:none;pointer-events:none}
+.zgl-login.is-entering .zgl-login-scan{display:block;animation:zglScan 1.1s ease-in-out infinite}
+.zgl-login.is-entering .zgl-login-entering-mask{display:flex}
+.zgl-login.is-entering .zgl-login-qr-tip{color:#2f7cc4;font-weight:700;letter-spacing:.04em}
+.zgl-login.is-entering .zgl-login-card{box-shadow:0 18px 50px rgba(47,124,196,.22)}
+@keyframes zglScan{
+  0%{top:16px;opacity:.3}
+  50%{opacity:1}
+  100%{top:188px;opacity:.3}
+}
+@keyframes zglSpin{to{transform:rotate(360deg)}}
+.zgl-login-qr-logo{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:48px;height:48px;border-radius:8px;background:#fff;
+  display:grid;place-items:center;box-shadow:0 0 0 3px #fff;
+}
+.zgl-login-qr-logo img{width:38px;height:38px;object-fit:contain}
+.zgl-login-qr-tip{font-size:12px;color:#8aa0b6;letter-spacing:.08em}
+.zgl-login-foot{
+  position:relative;z-index:2;text-align:center;
+  color:#7b95b0;font-size:12px;padding:0 20px 18px;
+}
+@media(max-width:1200px){
+  .zgl-login-body{grid-template-columns:1fr 340px;padding:20px 40px 60px}
+  .zgl-login-shield{display:none}
+}
+
 
 
 

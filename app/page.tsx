@@ -34,7 +34,7 @@ export default function Home() {
     if (!existing) {
       const script = document.createElement("script");
       script.id = "prototype-native-script";
-      script.src = "./prototype.js?v=sent-mgmt-status-20261012";
+      script.src = "./prototype.js?v=login-enter-20261013";
       script.async = false;
       script.onload = () => {
         if (typeof window !== "undefined" && (window as unknown as { lucide?: { createIcons: () => void } }).lucide) {
@@ -180,13 +180,13 @@ export default function Home() {
           <button className="nav-item nav-home" data-action="open-guide" title="返回统一入口">
             <i data-lucide="house" width="18"></i>
           </button>
-          <button className="nav-item" data-page="todo">
+          <button className="nav-item active" data-page="todo">
             <i data-lucide="clipboard-list" width="16"></i>我的指令
           </button>
           <button className="nav-item" data-page="issue-dispatch">
             <i data-lucide="send" width="16"></i>下发指令
           </button>
-          <button className="nav-item active" data-page="sent-mgmt">
+          <button className="nav-item" data-page="sent-mgmt">
             <i data-lucide="house" width="16"></i>指令监控
           </button>
           <button className="nav-item" data-page="stats">

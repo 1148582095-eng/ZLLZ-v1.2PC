@@ -4,10 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>指令流转中心 1.2 高保真原型</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
-  <link rel="stylesheet" href="./prototype.css?v=sent-mgmt-status-20261012">
+  <script src="./vendor/lucide.min.js"></script>
+  <script src="./vendor/echarts.min.js"></script>
+  <link rel="stylesheet" href="./prototype.css?v=login-enter-20261013">
 </head>
 <body>
 <div class="app">
@@ -87,9 +86,9 @@
   </div></header>
   <nav class="nav"><div class="nav-inner">
     <button class="nav-item nav-home"><i data-lucide="house" width="18"></i></button>
-    <button class="nav-item" data-page="todo"><i data-lucide="clipboard-list" width="16"></i>我的指令</button>
+    <button class="nav-item active" data-page="todo"><i data-lucide="clipboard-list" width="16"></i>我的指令</button>
     <button class="nav-item" data-page="issue-dispatch"><i data-lucide="send" width="16"></i>下发指令</button>
-    <button class="nav-item active" data-page="sent-mgmt"><i data-lucide="house" width="16"></i>指令监控</button>
+    <button class="nav-item" data-page="sent-mgmt"><i data-lucide="house" width="16"></i>指令监控</button>
     <button class="nav-item" data-page="stats"><i data-lucide="bar-chart-3" width="16"></i>统计管理</button>
     <button class="nav-item" data-page="external"><i data-lucide="users" width="16"></i>外部联系人</button>
     <button class="nav-item" data-page="templates"><i data-lucide="layout-template" width="16"></i>模板库</button>
@@ -122,6 +121,6 @@
   <div id="toast" class="toast"></div>
   <div class="watermark"></div>
 </div>
-<script src="./prototype.js?v=sent-mgmt-status-20261012"></script>
+<script src="./prototype.js?v=login-enter-20261013"></script>
 </body>
 </html>
