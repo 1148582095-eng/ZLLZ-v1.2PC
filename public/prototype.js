@@ -2747,6 +2747,10 @@ function isCirculateTask(r){
 
 function renderMyInstructions(){
   var subPage=state.mySubPage||"todo";
+  if(subPage==="read"){
+    subPage="todo";
+    state.mySubPage="todo";
+  }
 
   // 根据当前演示用户（武甲/武乙/武丙）动态过滤属于该用户的真实数据
   var userTodoRows = taskRows.filter(function(r){
@@ -2820,10 +2824,11 @@ function renderMyInstructions(){
         '<span class="sidebar-item-left">'+ico("send",16)+'<span>我下发的</span></span>'+
         '<span class="sidebar-badge">'+sentBaseRows.length+'</span>'+
       '</button>'+
-      '<button type="button" class="sidebar-item '+(subPage==="read"?"active":"")+'" data-action="switch-my-subpage" data-subpage="read">'+
-        '<span class="sidebar-item-left">'+ico("book-open",16)+'<span>我的待阅</span></span>'+
-        '<span class="sidebar-badge">'+readBaseRows.length+'</span>'+
-      '</button>'+
+      // 暂隐「我的待阅/传阅」菜单
+      // '<button type="button" class="sidebar-item '+(subPage==="read"?"active":"")+'" data-action="switch-my-subpage" data-subpage="read">'+
+      //   '<span class="sidebar-item-left">'+ico("book-open",16)+'<span>我的待阅</span></span>'+
+      //   '<span class="sidebar-badge">'+readBaseRows.length+'</span>'+
+      // '</button>'+
       '<button type="button" class="sidebar-item '+(subPage==="done"?"active":"")+'" data-action="switch-my-subpage" data-subpage="done">'+
         '<span class="sidebar-item-left">'+ico("check-circle-2",16)+'<span>我的已办</span></span>'+
         '<span class="sidebar-badge">'+doneBaseRows.length+'</span>'+
@@ -9320,9 +9325,9 @@ function detailActionBar(status,source){
             ico("clock-3", 16) + '<span>工单回执已提交，当前处于【待审批】阶段，等待审批人（' + escapeHtml(approver) + '）审核裁定</span>' +
           '</div>' +
           '<div style="display:flex;gap:12px">' +
-            '<button class="btn light" data-action="detail-open-circulate" style="color:#005c58;border-color:#b5e5e2;background:#eef8f7;padding:0 22px;height:38px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
-              ico("share-2", 14) + ' 传阅' +
-            '</button>' +
+            // '<button class="btn light" data-action="detail-open-circulate" style="color:#005c58;border-color:#b5e5e2;background:#eef8f7;padding:0 22px;height:38px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
+            //   ico("share-2", 14) + ' 传阅' +
+            // '</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -9335,9 +9340,9 @@ function detailActionBar(status,source){
           ico("shield-alert", 16) + '<span>当前节点为【回执审批】，请审阅处置成果并裁定</span>' +
         '</div>' +
         '<div style="display:flex;gap:12px">' +
-          '<button class="btn light" data-action="detail-open-circulate" style="color:#005c58;border-color:#b5e5e2;background:#eef8f7;padding:0 20px;height:38px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
-            ico("share-2", 14) + ' 传阅' +
-          '</button>' +
+          // '<button class="btn light" data-action="detail-open-circulate" style="color:#005c58;border-color:#b5e5e2;background:#eef8f7;padding:0 20px;height:38px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
+          //   ico("share-2", 14) + ' 传阅' +
+          // '</button>' +
           '<button class="btn danger" data-action="detail-open-reject" style="background:#fff1f2;border:1px solid #fda4af;color:#e11d48;padding:0 24px;height:38px;font-weight:700;box-shadow:none;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
             ico("rotate-ccw",15) + ' 退回重办' +
           '</button>' +
@@ -9357,10 +9362,10 @@ function detailActionBar(status,source){
   // 待阅公文指令
   if(status==="待阅"||row.req==="仅阅读"){
     return '<div class="detail-action-bar">' +
-      '<div class="detail-action-bar-inner" style="justify-content:space-between">' +
-        '<button class="btn light" data-action="detail-open-circulate" style="color:#005c58;border-color:#b5e5e2;background:#eef8f7;padding:0 20px;height:38px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
-          ico("share-2", 14) + ' 传阅' +
-        '</button>' +
+      '<div class="detail-action-bar-inner" style="justify-content:flex-end">' +
+        // '<button class="btn light" data-action="detail-open-circulate" style="color:#005c58;border-color:#b5e5e2;background:#eef8f7;padding:0 20px;height:38px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
+        //   ico("share-2", 14) + ' 传阅' +
+        // '</button>' +
         '<button class="btn action-teal" data-action="detail-finish-read" style="background:#059669;border-color:#059669;padding:0 26px;font-size:14px;font-weight:700">' +
           ico("check-circle",15) + ' 确认阅知并办结' +
         '</button>' +
@@ -9370,10 +9375,10 @@ function detailActionBar(status,source){
 
   // 待处理状态：最左侧增加传阅按钮，右侧从左到右分别为：生成子单，转办，提交结果。
   return '<div class="detail-action-bar">' +
-    '<div class="detail-action-bar-inner" style="justify-content:space-between">' +
-      '<button class="btn light" data-action="detail-open-circulate" style="color:#005c58;border-color:#b5e5e2;background:#eef8f7;padding:0 20px;height:38px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
-        ico("share-2", 14) + ' 传阅' +
-      '</button>' +
+    '<div class="detail-action-bar-inner" style="justify-content:flex-end">' +
+      // '<button class="btn light" data-action="detail-open-circulate" style="color:#005c58;border-color:#b5e5e2;background:#eef8f7;padding:0 20px;height:38px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
+      //   ico("share-2", 14) + ' 传阅' +
+      // '</button>' +
       '<div style="display:flex;gap:12px;align-items:center">' +
         '<button class="btn light" data-action="detail-open-subtask" style="color:#0284c7;border-color:#bae6fd;background:#f0f9ff;padding:0 20px;height:38px;font-size:13px;font-weight:600;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">' +
           ico("git-fork", 14) + ' 生成子单' +
@@ -9747,6 +9752,68 @@ function renderGuide(){
     + footer()
   + '</div>';
 }
+function renderLoginQrMark(){
+  var cells = "";
+  var i, j, n = 21;
+  function on(x, y){
+    var inFinder = (x < 7 && y < 7) || (x > n - 8 && y < 7) || (x < 7 && y > n - 8);
+    if(inFinder){
+      var fx = x < 7 ? x : (x > n - 8 ? x - (n - 7) : x);
+      var fy = y < 7 ? y : (y > n - 8 ? y - (n - 7) : y);
+      var ring = fx === 0 || fy === 0 || fx === 6 || fy === 6 || (fx >= 2 && fx <= 4 && fy >= 2 && fy <= 4);
+      return ring;
+    }
+    if(x >= 8 && x <= 12 && y >= 8 && y <= 12) return false;
+    return ((x * 7 + y * 13 + x * y) % 5) < 2;
+  }
+  for(j = 0; j < n; j++){
+    for(i = 0; i < n; i++){
+      if(on(i, j)) cells += '<rect x="'+i+'" y="'+j+'" width="1" height="1" rx="0.08"/>';
+    }
+  }
+  return '<svg class="zgl-qr-svg" viewBox="0 0 '+n+' '+n+'" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+cells+'</svg>';
+}
+function renderLogin(){
+  return '<div class="zgl-login">' +
+    '<div class="zgl-login-bg"></div>' +
+    '<header class="zgl-login-top">' +
+      '<div class="zgl-login-brands">' +
+        '<span class="zgl-kn"><b>KN</b><span>康奈网络<br>knn.net.cn</span></span>' +
+        '<span class="zgl-brand-split"></span>' +
+        '<img class="zgl-login-logo" src="./brand-logo.png" alt="正管用">' +
+      '</div>' +
+      '<div class="zgl-login-links"><span>' + ico("phone", 14) + ' 联系我们 4000-999-363</span><i></i><span>产品矩阵</span></div>' +
+    '</header>' +
+    '<div class="zgl-login-body">' +
+      '<div class="zgl-login-copy">' +
+        '<div class="zgl-login-domain">wxb.cn</div>' +
+        '<h1>正管用</h1>' +
+        '<h2>网络生态综合治理平台</h2>' +
+        '<ul>' +
+          '<li><b>AI</b> 人工智能+网络生态综合治理</li>' +
+          '<li>' + ico("check-circle-2", 15) + ' 正能量是总要求</li>' +
+          '<li>' + ico("map-pin", 15) + ' 管得住是硬道理</li>' +
+          '<li>' + ico("sparkles", 15) + ' 用得好是真本事</li>' +
+        '</ul>' +
+      '</div>' +
+      '<div class="zgl-login-shield" aria-hidden="true"><span>正管用</span></div>' +
+      '<div class="zgl-login-card">' +
+        '<div class="zgl-login-card-title">欢迎登录</div>' +
+        '<div class="zgl-login-card-sub">网络生态综合治理平台</div>' +
+        '<button type="button" class="zgl-login-qr" data-action="login-qr-success" title="点击二维码模拟登录">' +
+          renderLoginQrMark() +
+          '<span class="zgl-login-qr-logo"><img src="./brand-logo.png" alt=""></span>' +
+          '<span class="zgl-login-scan"></span>' +
+          '<span class="zgl-login-entering-mask">' +
+            '<span class="zgl-login-spinner"></span>' +
+          '</span>' +
+        '</button>' +
+        '<div class="zgl-login-qr-tip" data-login-tip>请使用微信扫码同步登录</div>' +
+      '</div>' +
+    '</div>' +
+    '<footer class="zgl-login-foot">© 2013-2026 西安康奈网络科技有限公司 保留所有权利　|　陕ICP备14037110号-14</footer>' +
+  '</div>';
+}
 var HASH_PAGES = {
   guide: true,
   todo: true,
@@ -9765,7 +9832,8 @@ var HASH_PAGES = {
   templates: true,
   settings: true,
   roles: true,
-  detail: true
+  detail: true,
+  login: true
 };
 var JUMP_HASHES = { mt: true, h5: true, mobile: true };
 var _applyingHash = false;
@@ -9815,7 +9883,7 @@ function parseAppHash(){
   }
   if(page === "todo" || page === "sent" || page === "read" || page === "done" || page === "draft"){
     var sub = page === "todo" ? (parts[1] || "todo") : page;
-    if(sub !== "todo" && sub !== "sent" && sub !== "read" && sub !== "done" && sub !== "draft") sub = "todo";
+    if(sub === "read" || (sub !== "todo" && sub !== "sent" && sub !== "done" && sub !== "draft")) sub = "todo";
     return { page: "todo", mySubPage: sub };
   }
   if(!HASH_PAGES[page]) page = "guide";
@@ -9894,7 +9962,8 @@ function consumeLegacyQuery(){
 
 function render(){
   closeNavSettingsMenu();
-  document.querySelector(".app").classList.toggle("guide-mode",state.page==="guide");
+  document.querySelector(".app").classList.toggle("guide-mode",state.page==="guide"||state.page==="login");
+  document.querySelector(".app").classList.toggle("login-mode",state.page==="login");
   if(state.page==="issue-form"){
     state.page="todo";
   }
@@ -9905,6 +9974,7 @@ function render(){
   var settingsTrig=document.getElementById("nav-settings-trigger");
   if(settingsTrig) settingsTrig.classList.toggle("active", state.page==="settings");
   var html=state.page==="guide"?renderGuide():
+    state.page==="login"?renderLogin():
     state.page==="issue-dispatch"?renderIssueDispatchPage():
     (state.page==="todo"||state.page==="sent"||state.page==="read"||state.page==="done"||state.page==="draft")?renderMyInstructions():
     state.page==="sent-mgmt"?renderSentManagement():
@@ -9959,7 +10029,23 @@ function bindActions(){
     var a=el.dataset.action;
     var handled=true;
     if(a==="open-guide"){state.page="guide";render();window.scrollTo(0,0)}
-    else if(a==="open-pc"){flushGuideLinkInputs();state.page="sent-mgmt";render();window.scrollTo(0,0)}
+    else if(a==="open-pc"){flushGuideLinkInputs();state.page="login";render();window.scrollTo(0,0)}
+    else if(a==="login-qr-success"){
+      if(state.loginEntering) return;
+      state.loginEntering = true;
+      var loginRoot = document.querySelector(".zgl-login");
+      var tip = document.querySelector("[data-login-tip]");
+      if(loginRoot) loginRoot.classList.add("is-entering");
+      if(tip) tip.textContent = "识别成功，正在进入系统…";
+      setTimeout(function(){
+        state.loginEntering = false;
+        state.page = "todo";
+        state.mySubPage = "todo";
+        showToast("登录成功");
+        render();
+        window.scrollTo(0,0);
+      }, 1400);
+    }
     else if(a==="save-guide-link"){
       var target = el.dataset.target;
       var inp = document.getElementById("guide-link-" + target);
@@ -13166,16 +13252,16 @@ var inviteState = {
   qrCustom: "100",
   qrExpire: "2026-12-31T23:59",
   qrGenerated: false,
-  batchName: "2026三季度网评员补充招募批次",
+  batchName: "",
   codeQty: 10,
   codeExpire: "2026-12-31T23:59",
   codeFilter: "all",
   codes: [
-    { id: "SB-2026-8A91F", status: "expired", org: "中共台中市委宣传部/办公室", role: "上报员", expire: "2026-09-30 23:59" },
-    { id: "SB-2026-3B22C", status: "used", name: "周敏", phone: "139****6621", org: "中共台中市委宣传部/办公室", role: "上报员", expire: "2026-09-30 23:59" },
-    { id: "SB-2026-7C11D", status: "expired", org: "中共台中市委宣传部/办公室", role: "上报员", expire: "2026-09-30 23:59" },
-    { id: "SB-2026-9E40E", status: "expired", org: "中共台中市委宣传部/办公室", role: "上报员", expire: "2026-09-30 23:59" },
-    { id: "SB-2026-HX91A", status: "expired", org: "中共台中市委宣传部/办公室", role: "上报员", expire: "2026-09-30 23:59" }
+    { id: "SB-2026-8A91F", status: "expired", org: "教育厅/高教组", role: "上报员", expire: "2026-09-30 23:59" },
+    { id: "SB-2026-3B22C", status: "used", name: "周敏", phone: "139****6621", org: "教育厅/高教组", role: "上报员", expire: "2026-09-30 23:59" },
+    { id: "SB-2026-7C11D", status: "expired", org: "教育厅/高教组", role: "上报员", expire: "2026-09-30 23:59" },
+    { id: "SB-2026-9E40E", status: "expired", org: "教育厅/高教组", role: "上报员", expire: "2026-09-30 23:59" },
+    { id: "SB-2026-HX91A", status: "expired", org: "教育厅/高教组", role: "上报员", expire: "2026-09-30 23:59" }
   ]
 };
 function ensureInviteState(){
@@ -13292,7 +13378,7 @@ function inviteCodePane(){
       : (st === "expired"
         ? '<span class="invite-code-tag expired">已过期</span>'
         : '<span class="invite-code-tag unused">未使用</span>');
-    var meta = escapeHtml(c.org || inviteOrgName()) + ' · ' + escapeHtml(c.role || "上报员") + ' · 至 ' + escapeHtml(c.expire || formatInviteExpire(inviteState.codeExpire));
+    var meta = '教育厅/高教组 · 至 ' + escapeHtml(c.expire || formatInviteExpire(inviteState.codeExpire));
     return '<div class="invite-code-item '+st+'"><span class="idx">'+(i+1)+'.</span><div class="invite-code-body"><div class="invite-code-line">'+
       '<span class="code">'+escapeHtml(c.id)+'</span>'+badge+
       '</div><div class="invite-code-meta">'+meta+'</div></div></div>';
@@ -13304,13 +13390,13 @@ function inviteCodePane(){
   return '<div class="invite-split">' +
     '<div class="invite-pane code-left">' +
       '<div class="invite-field"><label class="invite-field-label">所在组织节点</label><select class="select" data-invite-org>'+inviteOrgOptions()+'</select></div>' +
-      '<div class="invite-field"><label class="invite-field-label">招募批次名称</label><input class="input" data-invite-batch-name maxlength="40" value="'+escapeHtml(inviteState.batchName)+'" placeholder="请输入批次名称"></div>' +
+      '<div class="invite-field"><label class="invite-field-label">邀请批次名称</label><input class="input" data-invite-batch-name maxlength="40" value="'+escapeHtml(inviteState.batchName)+'" placeholder="请输入邀请批次名称"></div>' +
       '<div class="invite-field"><label class="invite-field-label">单次生成数量</label><div class="invite-chips">'+chips+'</div></div>' +
       '<div class="invite-field"><label class="invite-field-label">有效期至</label><input class="input" type="datetime-local" data-invite-code-expire value="'+escapeHtml(inviteState.codeExpire)+'"></div>' +
       '<button type="button" class="invite-gen-btn" data-action="invite-gen-codes">'+ico("refresh-cw",14)+' 生成激活码批次</button>' +
     '</div>' +
     '<div class="invite-pane code-right">' +
-      '<div class="invite-code-head"><div><b>激活码列表</b><span class="count">（共 '+all.length+' 条，未使用 '+unusedN+'）</span></div>' +
+      '<div class="invite-code-head"><div><b>激活码列表</b><span class="count">(共 '+all.length+' 条，未使用 '+unusedN+')</span></div>' +
         '<div class="invite-code-tools">' +
           '<button type="button" class="btn invite-copy-unused-btn" data-action="invite-copy-unused">'+ico("copy",13)+' 一键复制未用码</button>' +
           '<button type="button" class="btn" data-action="invite-export">'+ico("download",13)+' 导出表格</button>' +
@@ -13378,7 +13464,7 @@ function handleInviteAction(a, el, root){
   if(a==="invite-gen-codes"){
     syncInviteFormFromDom(root);
     var name = String(inviteState.batchName || "").trim();
-    if(!name){ showToast("请输入招募批次名称"); return true; }
+    if(!name){ showToast("请输入邀请批次名称"); return true; }
     var n = inviteState.codeQty || 10;
     var expText = formatInviteExpire(inviteState.codeExpire);
     var expired = expText && new Date(expText.replace(/-/g, "/")) < new Date("2026-10-11T00:00:00");
@@ -13387,7 +13473,7 @@ function handleInviteAction(a, el, root){
       added.push({
         id: makeInviteCode(),
         status: expired ? "expired" : "unused",
-        org: inviteOrgName(),
+        org: "教育厅/高教组",
         role: "上报员",
         expire: expText
       });

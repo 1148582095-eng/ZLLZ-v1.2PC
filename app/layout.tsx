@@ -11,12 +11,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="zh-CN">
       <head>
-        <link rel="stylesheet" href="./prototype.css?v=sent-mgmt-status-20261012" />
-        <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
+        <link rel="stylesheet" href="./prototype.css?v=login-enter-20261013" />
       </head>
       <body>
-        <Script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" strategy="beforeInteractive" />
-        <Script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" strategy="beforeInteractive" />
+        <Script src="./vendor/echarts.min.js" strategy="beforeInteractive" />
+        <Script src="./vendor/lucide.min.js" strategy="beforeInteractive" />
         {children}
       </body>
     </html>
